@@ -20,14 +20,29 @@ pub fn grind(
 ) -> Option<(Codeword, Rho)> {
     for _ in 0..max_retries {
         let rho = Rho::random(rng);
-        let codeword = Codeword::new(num_chunks, chunk_bits, param, message, &rho);
-        if codeword.sum() == target_sum {
-            return Some((codeword, rho));
+        match new_valid(num_chunks, chunk_bits, target_sum, param, message, &rho) {
+            Some(codeword) => return Some((codeword, rho)),
+            None => continue,
         }
     }
-
-    // give up because we couldn't fnd
+    // give up because we couldn't find a valid encoding in a reasonable number of attempts.
     None
+}
+
+pub fn new_valid(
+    num_chunks: usize,
+    chunk_bits: usize,
+    target_sum: usize,
+    param: &Param,
+    message: &Message,
+    rho: &Rho,
+) -> Option<Codeword> {
+    let codeword = Codeword::new(num_chunks, chunk_bits, param, message, rho);
+    if codeword.sum() == target_sum {
+        Some(codeword)
+    } else {
+        None
+    }
 }
 
 pub struct Codeword {
@@ -42,7 +57,7 @@ impl Codeword {
         message: &Message,
         rho: &Rho,
     ) -> Codeword {
-        let full_hash = tweak_hash_message(param, message);
+        let full_hash = tweak_hash_message(param, message, rho);
         let trunc_hash = &full_hash.as_ref()[0..num_chunks * chunk_bits / 8];
         let chunks = bytes_to_chunks(trunc_hash, chunk_bits);
         Self { chunks }

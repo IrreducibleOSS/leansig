@@ -125,7 +125,7 @@ impl Default for Signer {
         let chunk_size = 4;
         let num_chunks = message_hash_len * 8 / chunk_size;
         Self {
-            rng: StdRng::from_seed([0u8; 32]),
+            rng: StdRng::from_os_rng(),
             max_retries: 100_000,
             chunk_bits: chunk_size,
             num_chunks,
