@@ -1,5 +1,6 @@
 //! Definition of various tweaked hash functions used in the project.
 
+use rand::{RngCore as _, rngs::StdRng};
 use sha2::{Digest as _, Sha256};
 
 use crate::{Message, Param};
@@ -12,6 +13,14 @@ const TWEAK_MESSAGE: u8 = 0x02;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Hash(pub [u8; 32]);
 
+impl Hash {
+    pub fn random(rng: &mut StdRng) -> Self {
+        let mut hash = [0u8; 32];
+        rng.fill_bytes(&mut hash);
+        Hash(hash)
+    }
+}
+
 impl AsRef<[u8]> for Hash {
     fn as_ref(&self) -> &[u8] {
         &self.0
@@ -19,9 +28,8 @@ impl AsRef<[u8]> for Hash {
 }
 
 // TODO: this is not the same function used in the upstream hash-sig repo, because it still lacks
-// 2 parameters:
+// parameters:
 // - randomness
-// - epoch.
 pub fn tweak_hash_message(param: &Param, message: &Message) -> Hash {
     let mut hasher = Sha256::new();
     hasher.update(param);
@@ -32,9 +40,6 @@ pub fn tweak_hash_message(param: &Param, message: &Message) -> Hash {
 }
 
 /// Returns a hash that is meant to be used for chain hash.
-///
-// TODO: same here:
-// - epoch
 pub fn tweak_hash_chain(
     param: &Param,
     chain_index: usize,

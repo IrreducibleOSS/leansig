@@ -1,22 +1,30 @@
 //! Encoding related stuff.
 
 use bitvec::prelude::*;
+use rand::rngs::StdRng;
 
 use crate::{
     Message, Param, Rho,
     hash::{self, tweak_hash_message},
 };
 
-pub fn encode(
+/// Find a suitable encoding to fit into the target sum.
+pub fn grind(
     num_chunks: usize,
     chunk_bits: usize,
     target_sum: usize,
     max_retries: usize,
     param: &Param,
     message: &Message,
-    rho: &Rho,
-) -> Option<Codeword> {
-    for _ in 0..max_retries {}
+    rng: &mut StdRng,
+) -> Option<(Codeword, Rho)> {
+    for _ in 0..max_retries {
+        let rho = Rho::random(rng);
+        let codeword = Codeword::new(num_chunks, chunk_bits, param, message, &rho);
+        if codeword.sum() == target_sum {
+            return Some((codeword, rho));
+        }
+    }
 
     // give up because we couldn't fnd
     None
@@ -45,6 +53,14 @@ impl Codeword {
     /// This defines the distance from the sink
     pub fn sum(&self) -> usize {
         self.chunks.iter().map(|&chunk| chunk as usize).sum()
+    }
+
+    pub fn num_chunks(&self) -> usize {
+        self.chunks.len()
+    }
+
+    pub fn chunks(&self) -> &[u8] {
+        &self.chunks
     }
 }
 
