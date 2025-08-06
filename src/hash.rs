@@ -48,6 +48,8 @@ pub fn tweak_hash_chain(
     hasher.update(param);
     hasher.update([TWEAK_CHAIN]);
     hasher.update(hash);
+    hasher.update(chain_index.to_be_bytes());
+    hasher.update(pos_in_chain.to_be_bytes());
     let hash = hasher.finalize();
     Hash(hash.into())
 }

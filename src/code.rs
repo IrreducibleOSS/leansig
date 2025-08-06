@@ -3,16 +3,11 @@
 use bitvec::prelude::*;
 use rand::rngs::StdRng;
 
-use crate::{
-    Message, Param, Rho,
-    hash::{self, tweak_hash_message},
-};
+use crate::{Message, Param, Rho, hash::tweak_hash_message, spec::Spec};
 
 /// Find a suitable encoding to fit into the target sum.
 pub fn grind(
-    num_chunks: usize,
-    chunk_bits: usize,
-    target_sum: usize,
+    spec: &Spec,
     max_retries: usize,
     param: &Param,
     message: &Message,
@@ -20,7 +15,7 @@ pub fn grind(
 ) -> Option<(Codeword, Rho)> {
     for _ in 0..max_retries {
         let rho = Rho::random(rng);
-        match new_valid(num_chunks, chunk_bits, target_sum, param, message, &rho) {
+        match new_valid(spec, param, message, &rho) {
             Some(codeword) => return Some((codeword, rho)),
             None => continue,
         }
@@ -29,16 +24,9 @@ pub fn grind(
     None
 }
 
-pub fn new_valid(
-    num_chunks: usize,
-    chunk_bits: usize,
-    target_sum: usize,
-    param: &Param,
-    message: &Message,
-    rho: &Rho,
-) -> Option<Codeword> {
-    let codeword = Codeword::new(num_chunks, chunk_bits, param, message, rho);
-    if codeword.sum() == target_sum {
+pub fn new_valid(spec: &Spec, param: &Param, message: &Message, rho: &Rho) -> Option<Codeword> {
+    let codeword = Codeword::new(spec, param, message, rho);
+    if codeword.sum() == spec.target_sum {
         Some(codeword)
     } else {
         None
@@ -50,16 +38,10 @@ pub struct Codeword {
 }
 
 impl Codeword {
-    pub fn new(
-        num_chunks: usize,
-        chunk_bits: usize,
-        param: &Param,
-        message: &Message,
-        rho: &Rho,
-    ) -> Codeword {
+    pub fn new(spec: &Spec, param: &Param, message: &Message, rho: &Rho) -> Codeword {
         let full_hash = tweak_hash_message(param, message, rho);
-        let trunc_hash = &full_hash.as_ref()[0..num_chunks * chunk_bits / 8];
-        let chunks = bytes_to_chunks(trunc_hash, chunk_bits);
+        let trunc_hash = &full_hash.as_ref()[0..spec.num_chains * spec.chunk_bits / 8];
+        let chunks = bytes_to_chunks(trunc_hash, spec.chunk_bits);
         Self { chunks }
     }
 
