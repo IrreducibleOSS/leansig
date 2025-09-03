@@ -3,11 +3,12 @@
 use rand::{RngCore as _, rngs::StdRng};
 use sha2::{Digest as _, Sha256};
 
-use crate::{Message, Nonce, Param};
+use crate::{Message, Nonce, Param, Pk};
 
 // Taken from:
 // https://github.com/b-wagn/hash-sig/blob/34fa36886d2942f851f26345c49f92fdb96ac7eb/src/lib.rs#L4-L6
 const TWEAK_CHAIN: u8 = 0x00;
+const TWEAK_TREE: u8 = 0x01;
 const TWEAK_MESSAGE: u8 = 0x02;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -50,6 +51,55 @@ pub fn tweak_hash_chain(
     hasher.update(hash);
     hasher.update(chain_index.to_be_bytes());
     hasher.update(pos_in_chain.to_be_bytes());
+    let hash = hasher.finalize();
+    Hash(hash.into())
+}
+/// Computes the hash of a HashTree node from its two children.
+///
+/// # Arguments
+///
+/// * `param` - Cryptographic parameter
+/// * `left` - Hash of the left child node
+/// * `right` - Hash of the right child node  
+/// * `level` - The level of this node in the tree (0 = leaf level)
+/// * `index` - The index of this node at its level
+///
+/// # Returns
+///
+/// The hash of the node
+pub fn tweak_hash_tree_node(
+    param: &Param,
+    left: &Hash,
+    right: &Hash,
+    level: u32,
+    index: u32,
+) -> Hash {
+    let mut hasher = Sha256::new();
+    hasher.update(param);
+    hasher.update([TWEAK_TREE]);
+    hasher.update(level.to_be_bytes());
+    hasher.update(index.to_be_bytes());
+    hasher.update(left);
+    hasher.update(right);
+    let hash = hasher.finalize();
+    Hash(hash.into())
+}
+
+/// Computes the hash associated to a public key
+///
+/// This is used to compute the leaves of the HashTree
+///
+/// # Arguments
+///
+/// * `param` - Cryptographic parameter
+/// * `public_key` - The public key
+pub fn tweak_public_key_hash(param: &Param, public_key: &Pk) -> Hash {
+    let mut hasher = Sha256::new();
+    hasher.update(param);
+    hasher.update([TWEAK_TREE]);
+    for h in public_key.end_hashes.iter() {
+        hasher.update(h);
+    }
     let hash = hasher.finalize();
     Hash(hash.into())
 }
