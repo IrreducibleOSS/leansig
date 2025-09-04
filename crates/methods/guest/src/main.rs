@@ -1,14 +1,17 @@
+use leansig_core::{AggregatedSignature, AggregatedVerifier};
+use leansig_shared::PublicInputs;
 use risc0_zkvm::guest::env;
-use shared::PublicInputs;
 
 fn main() {
-    // TODO: Implement your guest code here
+    let public_inputs: PublicInputs = env::read();
+    let aggregated_signature: AggregatedSignature = env::read();
 
-    // read the input
-    let input: u32 = env::read();
+    let verifier = AggregatedVerifier::new(public_inputs.validator_roots.clone(), public_inputs.spec.clone());
 
-    // TODO: do something with the input
+    assert!(
+        verifier.verify(&public_inputs.message, &aggregated_signature),
+        "Aggregated signature verification failed"
+    );
 
-    // write public output to the journal
-    env::commit(&input);
+    env::commit(&public_inputs);
 }
