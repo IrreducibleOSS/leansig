@@ -1,7 +1,7 @@
 //! Definition of various tweaked hash functions used in the project.
 
 use rand::{RngCore as _, rngs::StdRng};
-use sha2::{Digest as _, Sha256};
+use tiny_keccak::{Hasher, Keccak};
 
 use crate::{Message, Nonce, Param, Pk};
 
@@ -29,13 +29,14 @@ impl AsRef<[u8]> for Hash {
 }
 
 pub fn tweak_hash_message(param: &Param, message: &Message, nonce: &Nonce) -> Hash {
-    let mut hasher = Sha256::new();
-    hasher.update(param);
-    hasher.update([TWEAK_MESSAGE]);
-    hasher.update(nonce);
-    hasher.update(message);
-    let hash = hasher.finalize();
-    Hash(hash.into())
+    let mut hasher = Keccak::v256();
+    hasher.update(param.as_ref());
+    hasher.update(&[TWEAK_MESSAGE]);
+    hasher.update(nonce.as_ref());
+    hasher.update(message.as_ref());
+    let mut hash = [0u8; 32];
+    hasher.finalize(&mut hash);
+    Hash(hash)
 }
 
 /// Returns a hash that is meant to be used for chain hash.
@@ -45,14 +46,15 @@ pub fn tweak_hash_chain(
     pos_in_chain: usize,
     hash: Hash,
 ) -> Hash {
-    let mut hasher = Sha256::new();
-    hasher.update(param);
-    hasher.update([TWEAK_CHAIN]);
-    hasher.update(hash);
-    hasher.update(chain_index.to_be_bytes());
-    hasher.update(pos_in_chain.to_be_bytes());
-    let hash = hasher.finalize();
-    Hash(hash.into())
+    let mut hasher = Keccak::v256();
+    hasher.update(param.as_ref());
+    hasher.update(&[TWEAK_CHAIN]);
+    hasher.update(hash.as_ref());
+    hasher.update(&chain_index.to_be_bytes());
+    hasher.update(&pos_in_chain.to_be_bytes());
+    let mut result = [0u8; 32];
+    hasher.finalize(&mut result);
+    Hash(result)
 }
 /// Computes the hash of a HashTree node from its two children.
 ///
@@ -74,15 +76,16 @@ pub fn tweak_hash_tree_node(
     level: u32,
     index: u32,
 ) -> Hash {
-    let mut hasher = Sha256::new();
-    hasher.update(param);
-    hasher.update([TWEAK_TREE]);
-    hasher.update(level.to_be_bytes());
-    hasher.update(index.to_be_bytes());
-    hasher.update(left);
-    hasher.update(right);
-    let hash = hasher.finalize();
-    Hash(hash.into())
+    let mut hasher = Keccak::v256();
+    hasher.update(param.as_ref());
+    hasher.update(&[TWEAK_TREE]);
+    hasher.update(&level.to_be_bytes());
+    hasher.update(&index.to_be_bytes());
+    hasher.update(left.as_ref());
+    hasher.update(right.as_ref());
+    let mut result = [0u8; 32];
+    hasher.finalize(&mut result);
+    Hash(result)
 }
 
 /// Computes the hash associated to a public key
@@ -94,12 +97,13 @@ pub fn tweak_hash_tree_node(
 /// * `param` - Cryptographic parameter
 /// * `public_key` - The public key
 pub fn tweak_public_key_hash(param: &Param, public_key: &Pk) -> Hash {
-    let mut hasher = Sha256::new();
-    hasher.update(param);
-    hasher.update([TWEAK_TREE]);
+    let mut hasher = Keccak::v256();
+    hasher.update(param.as_ref());
+    hasher.update(&[TWEAK_TREE]);
     for h in public_key.end_hashes.iter() {
-        hasher.update(h);
+        hasher.update(h.as_ref());
     }
-    let hash = hasher.finalize();
-    Hash(hash.into())
+    let mut result = [0u8; 32];
+    hasher.finalize(&mut result);
+    Hash(result)
 }
