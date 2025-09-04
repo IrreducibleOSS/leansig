@@ -1,0 +1,10 @@
+[package]
+name = "core"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+bitvec = "1.0.1"
+hex-literal = "1.0.0"
+rand = "0.9.2"
+sha2 = "0.10.9"
