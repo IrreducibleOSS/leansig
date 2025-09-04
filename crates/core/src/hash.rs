@@ -1,6 +1,7 @@
 //! Definition of various tweaked hash functions used in the project.
 
 use rand::{RngCore as _, rngs::StdRng};
+use serde::{Deserialize, Serialize};
 use tiny_keccak::{Hasher, Keccak};
 
 use crate::{Message, Nonce, Param, Pk};
@@ -11,7 +12,7 @@ const TWEAK_CHAIN: u8 = 0x00;
 const TWEAK_TREE: u8 = 0x01;
 const TWEAK_MESSAGE: u8 = 0x02;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct Hash(pub [u8; 32]);
 
 impl Hash {

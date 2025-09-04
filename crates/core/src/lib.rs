@@ -1,23 +1,24 @@
 use hash_chain::hash_chain;
 use rand::{RngCore, rngs::StdRng};
+use serde::{Deserialize, Serialize};
 use spec::Spec;
 
 use crate::hash::Hash;
 use crate::hash::tweak_public_key_hash;
 use crate::hash_tree::{HashTree, HashTreeProof};
 
-mod code;
-mod hash;
-mod hash_chain;
-mod hash_tree;
+pub mod code;
+pub mod hash;
+pub mod hash_chain;
+pub mod hash_tree;
 
 pub mod spec;
 
 const MESSAGE_LEN: usize = 32;
 const RAND_LEN: usize = 23;
 
-#[derive(Clone)]
-struct Nonce(pub [u8; RAND_LEN]);
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct Nonce(pub [u8; RAND_LEN]);
 
 impl Nonce {
     /// Generate a random nonce.
@@ -34,6 +35,7 @@ impl AsRef<[u8]> for Nonce {
     }
 }
 
+#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
 pub struct Message(pub [u8; MESSAGE_LEN]);
 
 impl AsRef<[u8]> for Message {
@@ -42,7 +44,7 @@ impl AsRef<[u8]> for Message {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Param {
     data: Vec<u8>,
 }
@@ -62,10 +64,10 @@ impl AsRef<[u8]> for Param {
 }
 
 /// A public key.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Pk {
-    param: Param,
-    end_hashes: Vec<Hash>,
+    pub param: Param,
+    pub end_hashes: Vec<Hash>,
 }
 
 impl Pk {
@@ -91,7 +93,7 @@ impl Pk {
 }
 
 /// A secret key.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Sk {
     param: Param,
     start_hashes: Vec<Hash>,
@@ -107,13 +109,13 @@ impl Sk {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct OtsSignature {
-    nonce: Nonce,
-    hashes: Vec<Hash>,
+    pub nonce: Nonce,
+    pub hashes: Vec<Hash>,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Signature {
     /// The one-time signature
     pub signature: OtsSignature,
@@ -296,7 +298,7 @@ pub fn verify_signature(
 }
 
 /// A signature from a single validator
-#[derive(Clone)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ValidatorSignature {
     /// The epoch used for signing
     pub epoch: usize,
@@ -309,6 +311,7 @@ pub struct ValidatorSignature {
 }
 
 /// Aggregated signatures from multiple validators
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct AggregatedSignature {
     /// Individual signatures from each validator
     pub signatures: Vec<ValidatorSignature>,
@@ -322,6 +325,7 @@ impl AggregatedSignature {
 }
 
 /// A collection of validator root hashes for verification
+#[derive(Clone, Debug)]
 pub struct AggregatedVerifier {
     /// List of registered validator roots
     roots: Vec<Hash>,
@@ -330,7 +334,7 @@ pub struct AggregatedVerifier {
 }
 
 impl AggregatedVerifier {
-    /// Create a new validator roots collection
+    /// Create a new validator roots collection with specification
     pub fn new(roots: Vec<Hash>, spec: Spec) -> Self {
         Self { roots, spec }
     }
@@ -405,7 +409,7 @@ mod tests {
         ];
 
         // Create the validator roots collection for verification
-        let verifier = AggregatedVerifier::new(roots, spec);
+        let verifier = AggregatedVerifier::new(roots.clone(), spec.clone());
 
         // Message to be signed by all validators
         let message = Message([42; 32]);

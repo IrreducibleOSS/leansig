@@ -1,5 +1,7 @@
+use serde::{Deserialize, Serialize};
+
 /// Specification for the signature scheme instantiation.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Spec {
     pub message_hash_len: usize,
     /// The number of bits per each coordinate in a codeword.
