@@ -7,8 +7,8 @@ edition = "2024"
 
 [dependencies]
 risc0-zkvm = { version = "^3.0.3", default-features = false, features = ["std", "unstable"] }
-leansig-core = { path = "../../core" }
-leansig-shared = { path = "../../shared" }
+leansig-core = { path = "../../../core" }
+leansig-shared = { path = "../../../shared" }
 
 [patch.crates-io]
 tiny-keccak = { git = "https://github.com/risc0/tiny-keccak", tag = "tiny-keccak/v2.0.2-risczero.0" }
