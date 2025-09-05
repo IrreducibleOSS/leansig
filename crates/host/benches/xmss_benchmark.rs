@@ -5,7 +5,7 @@ use methods::{XMSS_AGGREGATE_ELF, XMSS_AGGREGATE_ID};
 use risc0_zkvm::{
     ExecutorEnv, ExecutorImpl, ProverOpts, Session, VerifierContext, get_prover_server,
 };
-use leansig_shared::{PublicInputs, XmssTestData};
+use leansig_shared::XmssTestData;
 use std::time::{Duration, Instant};
 
 /// Configuration parameters for benchmarking
@@ -62,25 +62,14 @@ struct Job {
 impl Job {
     fn new(config: BenchmarkConfig) -> Self {
         // Create test data with specified parameters
-        let (public_inputs, aggregated) = create_test_data(
+        let test_data = create_test_data(
             config.num_validators,
             config.spec.clone(),
             config.tree_height,
-            10000,
-            None,
-            None,
+            10000,  // max_retries for nonce grinding
+            None,   // use default message [42; 32]
+            None,   // use default epoch 0
         );
-
-        let test_data = XmssTestData {
-            public_inputs: PublicInputs {
-                message: public_inputs.message,
-                epoch: public_inputs.epoch,
-                validator_roots: public_inputs.validator_roots,
-                validator_params: public_inputs.validator_params,
-                spec: public_inputs.spec,
-            },
-            aggregated_signature: aggregated,
-        };
 
         Self {
             elf: XMSS_AGGREGATE_ELF.to_vec(),
