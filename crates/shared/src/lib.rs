@@ -1,6 +1,7 @@
+use leansig_core::{Message, Param, hash::Hash, spec::Spec, AggregatedSignature};
 use serde::{Deserialize, Serialize};
-use leansig_core::{Message, AggregatedSignature, spec::Spec};
 
+/// Public inputs for RISC0 proof - only this gets committed to the journal
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct PublicInputs {
     /// The message being signed by all validators
@@ -8,9 +9,9 @@ pub struct PublicInputs {
     /// The epoch at which all validators sign
     pub epoch: usize,
     /// Each validator's XMSS tree root hash
-    pub validator_roots: Vec<leansig_core::hash::Hash>,
+    pub validator_roots: Vec<Hash>,
     /// Domain parameters for each validator
-    pub validator_params: Vec<leansig_core::Param>,
+    pub validator_params: Vec<Param>,
     /// Specification for the signature scheme
     pub spec: Spec,
 }

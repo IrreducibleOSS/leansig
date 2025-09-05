@@ -5,7 +5,7 @@ use methods::{XMSS_AGGREGATE_ELF, XMSS_AGGREGATE_ID};
 use risc0_zkvm::{
     ExecutorEnv, ExecutorImpl, ProverOpts, Session, VerifierContext, get_prover_server,
 };
-use shared::{PublicInputs, XmssTestData};
+use leansig_shared::{PublicInputs, XmssTestData};
 use std::time::{Duration, Instant};
 
 /// Configuration parameters for benchmarking

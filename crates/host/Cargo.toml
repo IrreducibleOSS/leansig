@@ -5,7 +5,7 @@ edition = "2024"
 
 [dependencies]
 methods = { path = "../methods" }
-shared = { path = "../shared" }
+leansig-shared = { path = "../shared" }
 leansig-core = { path = "../core" }
 risc0-zkvm = { version = "^3.0.3", features = ["prove"] }
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
