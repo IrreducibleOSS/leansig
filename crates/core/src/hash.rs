@@ -50,8 +50,8 @@ pub fn tweak_hash_chain(
     hasher.update(param.as_ref());
     hasher.update(&[TWEAK_CHAIN]);
     hasher.update(hash.as_ref());
-    hasher.update(&chain_index.to_be_bytes());
-    hasher.update(&pos_in_chain.to_be_bytes());
+    hasher.update(&(chain_index as u64).to_be_bytes());
+    hasher.update(&(pos_in_chain as u64).to_be_bytes());
     let mut result = [0u8; 32];
     hasher.finalize(&mut result);
     Hash(result)
