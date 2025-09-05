@@ -1,4 +1,5 @@
 use crate::{Hash, Param, hash::tweak_hash_tree_node};
+use serde::{Deserialize, Serialize};
 
 pub struct HashTree {
     /// The hash nodes in each level of the tree.
@@ -99,10 +100,10 @@ impl HashTree {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct HashTreeProof {
     leaf_index: usize,
-    path: Vec<Hash>,
+    pub path: Vec<Hash>,
 }
 
 impl HashTreeProof {
