@@ -6,3 +6,4 @@ edition = "2024"
 [dependencies]
 leansig-core = { path = "../core" }
 serde = { version = "1.0", default-features = false, features = ["derive", "alloc"] }
+rand = "0.9"

@@ -1,11 +1,10 @@
 use criterion::{Criterion, black_box, criterion_group, criterion_main};
-use risc0_host::create_test_data;
 use leansig_core::spec::{SPEC_1, SPEC_2, Spec};
+use leansig_shared::{XmssTestData, create_test_data};
 use methods::{XMSS_AGGREGATE_ELF, XMSS_AGGREGATE_ID};
 use risc0_zkvm::{
     ExecutorEnv, ExecutorImpl, ProverOpts, Session, VerifierContext, get_prover_server,
 };
-use leansig_shared::XmssTestData;
 use std::time::{Duration, Instant};
 
 /// Configuration parameters for benchmarking
@@ -66,9 +65,9 @@ impl Job {
             config.num_validators,
             config.spec.clone(),
             config.tree_height,
-            10000,  // max_retries for nonce grinding
-            None,   // use default message [42; 32]
-            None,   // use default epoch 0
+            10000, // max_retries for nonce grinding
+            None,  // use default message [42; 32]
+            None,  // use default epoch 0
         );
 
         Self {
