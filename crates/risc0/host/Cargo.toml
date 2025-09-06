@@ -1,12 +1,12 @@
 [package]
-name = "host"
+name = "risc0-host"
 version = "0.1.0"
 edition = "2024"
 
 [dependencies]
 methods = { path = "../methods" }
-leansig-shared = { path = "../shared" }
-leansig-core = { path = "../core" }
+leansig-shared = { path = "../../shared" }
+leansig-core = { path = "../../core" }
 risc0-zkvm = { version = "^3.0.3", features = ["prove"] }
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 serde = "1.0"
@@ -15,7 +15,7 @@ rand = "0.9"
 
 [dev-dependencies]
 criterion = { version = "0.5", features = ["html_reports"] }
-leansig-shared = { path = "../shared" }
+leansig-shared = { path = "../../shared" }
 
 [features]
 default = []

@@ -26,7 +26,7 @@ export RISC0_PROVER=local  # Use local prover
 export RISC0_GPU_SPLIT_FACTOR=1  # Use single GPU if available
 
 echo "📦 Building with CUDA support..."
-cargo build --release --features cuda -p host
+cargo build --release --features cuda -p risc0-host
 
 echo
 echo "🚀 Running benchmarks with CUDA acceleration..."
@@ -34,7 +34,7 @@ echo "   Sample size: 10 iterations per benchmark"
 echo
 
 # Run the Criterion benchmark
-cargo bench --features cuda -p host
+cargo bench --features cuda -p risc0-host
 
 echo
 echo "📊 Benchmark results saved to:"

@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["crates/host", "crates/methods", "crates/shared", "crates/core"]
+members = ["crates/risc0/host", "crates/risc0/methods", "crates/shared", "crates/core"]
 
 # Always optimize; building and running the guest takes much longer without optimization.
 [profile.dev]

@@ -1,5 +1,5 @@
 use criterion::{Criterion, black_box, criterion_group, criterion_main};
-use host::create_test_data;
+use risc0_host::create_test_data;
 use leansig_core::spec::{SPEC_1, SPEC_2, Spec};
 use methods::{XMSS_AGGREGATE_ELF, XMSS_AGGREGATE_ID};
 use risc0_zkvm::{
