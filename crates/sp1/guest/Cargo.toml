@@ -7,7 +7,3 @@ edition = "2021"
 sp1-zkvm = "4.0.0"
 leansig-core = { path = "../../core", features = ["sp1"] }
 leansig-shared = { path = "../../shared" }
-
-[patch.crates-io]
-# Use SP1's fork of tiny-keccak that includes the succinct feature for keccak precompile
-tiny-keccak = { git = "https://github.com/risc0/tiny-keccak", tag = "tiny-keccak/v2.0.2-risczero.0" }

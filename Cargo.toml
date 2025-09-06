@@ -16,3 +16,7 @@ opt-level = 3
 [profile.release]
 debug = 1
 lto = true
+
+[patch.crates-io]
+# Use SP1's fork of tiny-keccak that includes the succinct feature for keccak precompile
+tiny-keccak = { git = "https://github.com/risc0/tiny-keccak", tag = "tiny-keccak/v2.0.2-risczero.0" }

@@ -3,13 +3,10 @@
 //! This module provides a Keccak256 hasher that uses SP1's syscall_keccak_permute
 //! when running in the SP1 zkVM, significantly reducing cycles for keccak operations.
 
-use tiny_keccak::Hasher;
-
 /// SP1-optimized Keccak256 hasher
 pub struct Keccak256 {
     state: [u64; 25],
     buf: Vec<u8>,
-    offset: usize,
 }
 
 impl Keccak256 {
@@ -19,7 +16,6 @@ impl Keccak256 {
         Self {
             state: [0u64; 25],
             buf: Vec::new(),
-            offset: 0,
         }
     }
 
