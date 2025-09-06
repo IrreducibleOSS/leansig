@@ -2,7 +2,12 @@
 
 use rand::{RngCore as _, rngs::StdRng};
 use serde::{Deserialize, Serialize};
+
+#[cfg(not(feature = "sp1"))]
 use tiny_keccak::{Hasher, Keccak};
+
+#[cfg(feature = "sp1")]
+use crate::sp1_keccak as keccak_impl;
 
 use crate::{Message, Nonce, Param, Pk};
 
@@ -30,14 +35,27 @@ impl AsRef<[u8]> for Hash {
 }
 
 pub fn tweak_hash_message(param: &Param, message: &Message, nonce: &Nonce) -> Hash {
-    let mut hasher = Keccak::v256();
-    hasher.update(param.as_ref());
-    hasher.update(&[TWEAK_MESSAGE]);
-    hasher.update(nonce.as_ref());
-    hasher.update(message.as_ref());
-    let mut hash = [0u8; 32];
-    hasher.finalize(&mut hash);
-    Hash(hash)
+    #[cfg(not(feature = "sp1"))]
+    {
+        let mut hasher = Keccak::v256();
+        hasher.update(param.as_ref());
+        hasher.update(&[TWEAK_MESSAGE]);
+        hasher.update(nonce.as_ref());
+        hasher.update(message.as_ref());
+        let mut hash = [0u8; 32];
+        hasher.finalize(&mut hash);
+        Hash(hash)
+    }
+    
+    #[cfg(feature = "sp1")]
+    {
+        let mut hasher = keccak_impl::Keccak256::new();
+        hasher.update(param.as_ref());
+        hasher.update(&[TWEAK_MESSAGE]);
+        hasher.update(nonce.as_ref());
+        hasher.update(message.as_ref());
+        Hash(hasher.finalize())
+    }
 }
 
 /// Returns a hash that is meant to be used for chain hash.
@@ -47,15 +65,29 @@ pub fn tweak_hash_chain(
     pos_in_chain: usize,
     hash: Hash,
 ) -> Hash {
-    let mut hasher = Keccak::v256();
-    hasher.update(param.as_ref());
-    hasher.update(&[TWEAK_CHAIN]);
-    hasher.update(hash.as_ref());
-    hasher.update(&(chain_index as u64).to_be_bytes());
-    hasher.update(&(pos_in_chain as u64).to_be_bytes());
-    let mut result = [0u8; 32];
-    hasher.finalize(&mut result);
-    Hash(result)
+    #[cfg(not(feature = "sp1"))]
+    {
+        let mut hasher = Keccak::v256();
+        hasher.update(param.as_ref());
+        hasher.update(&[TWEAK_CHAIN]);
+        hasher.update(hash.as_ref());
+        hasher.update(&(chain_index as u64).to_be_bytes());
+        hasher.update(&(pos_in_chain as u64).to_be_bytes());
+        let mut result = [0u8; 32];
+        hasher.finalize(&mut result);
+        Hash(result)
+    }
+    
+    #[cfg(feature = "sp1")]
+    {
+        let mut hasher = keccak_impl::Keccak256::new();
+        hasher.update(param.as_ref());
+        hasher.update(&[TWEAK_CHAIN]);
+        hasher.update(hash.as_ref());
+        hasher.update(&(chain_index as u64).to_be_bytes());
+        hasher.update(&(pos_in_chain as u64).to_be_bytes());
+        Hash(hasher.finalize())
+    }
 }
 /// Computes the hash of a HashTree node from its two children.
 ///
@@ -77,16 +109,31 @@ pub fn tweak_hash_tree_node(
     level: u32,
     index: u32,
 ) -> Hash {
-    let mut hasher = Keccak::v256();
-    hasher.update(param.as_ref());
-    hasher.update(&[TWEAK_TREE]);
-    hasher.update(&level.to_be_bytes());
-    hasher.update(&index.to_be_bytes());
-    hasher.update(left.as_ref());
-    hasher.update(right.as_ref());
-    let mut result = [0u8; 32];
-    hasher.finalize(&mut result);
-    Hash(result)
+    #[cfg(not(feature = "sp1"))]
+    {
+        let mut hasher = Keccak::v256();
+        hasher.update(param.as_ref());
+        hasher.update(&[TWEAK_TREE]);
+        hasher.update(&level.to_be_bytes());
+        hasher.update(&index.to_be_bytes());
+        hasher.update(left.as_ref());
+        hasher.update(right.as_ref());
+        let mut result = [0u8; 32];
+        hasher.finalize(&mut result);
+        Hash(result)
+    }
+    
+    #[cfg(feature = "sp1")]
+    {
+        let mut hasher = keccak_impl::Keccak256::new();
+        hasher.update(param.as_ref());
+        hasher.update(&[TWEAK_TREE]);
+        hasher.update(&level.to_be_bytes());
+        hasher.update(&index.to_be_bytes());
+        hasher.update(left.as_ref());
+        hasher.update(right.as_ref());
+        Hash(hasher.finalize())
+    }
 }
 
 /// Computes the hash associated to a public key
@@ -98,13 +145,27 @@ pub fn tweak_hash_tree_node(
 /// * `param` - Cryptographic parameter
 /// * `public_key` - The public key
 pub fn tweak_public_key_hash(param: &Param, public_key: &Pk) -> Hash {
-    let mut hasher = Keccak::v256();
-    hasher.update(param.as_ref());
-    hasher.update(&[TWEAK_TREE]);
-    for h in public_key.end_hashes.iter() {
-        hasher.update(h.as_ref());
+    #[cfg(not(feature = "sp1"))]
+    {
+        let mut hasher = Keccak::v256();
+        hasher.update(param.as_ref());
+        hasher.update(&[TWEAK_TREE]);
+        for h in public_key.end_hashes.iter() {
+            hasher.update(h.as_ref());
+        }
+        let mut result = [0u8; 32];
+        hasher.finalize(&mut result);
+        Hash(result)
     }
-    let mut result = [0u8; 32];
-    hasher.finalize(&mut result);
-    Hash(result)
+    
+    #[cfg(feature = "sp1")]
+    {
+        let mut hasher = keccak_impl::Keccak256::new();
+        hasher.update(param.as_ref());
+        hasher.update(&[TWEAK_TREE]);
+        for h in public_key.end_hashes.iter() {
+            hasher.update(h.as_ref());
+        }
+        Hash(hasher.finalize())
+    }
 }

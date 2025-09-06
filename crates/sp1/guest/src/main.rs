@@ -4,6 +4,11 @@ sp1_zkvm::entrypoint!(main);
 use leansig_core::AggregatedVerifier;
 use leansig_shared::XmssTestData;
 
+// Note: This implementation uses SP1's keccak_permute precompile for optimized hashing.
+// The optimization is enabled via the "sp1" feature flag in leansig-core, which activates
+// tiny-keccak's "succinct" feature. This significantly reduces cycles for XMSS verification
+// which is keccak-intensive (using 4 different keccak-based hash functions).
+
 pub fn main() {
     // Read the test data containing both public inputs and aggregated signature
     let test_data = sp1_zkvm::io::read::<XmssTestData>();

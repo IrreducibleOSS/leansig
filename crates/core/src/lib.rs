@@ -12,6 +12,9 @@ pub mod hash;
 pub mod hash_chain;
 pub mod hash_tree;
 
+#[cfg(feature = "sp1")]
+pub mod sp1_keccak;
+
 pub mod spec;
 
 const MESSAGE_LEN: usize = 32;

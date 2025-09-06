@@ -3,6 +3,11 @@ name = "leansig-core"
 version = "0.1.0"
 edition = "2024"
 
+[features]
+default = []
+# Enable SP1 zkVM optimizations
+sp1 = []
+
 [dependencies]
 bitvec = "1.0.1"
 hex-literal = "1.0.0"
