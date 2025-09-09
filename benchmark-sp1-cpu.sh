@@ -1,4 +1,5 @@
 #!/bin/bash
+# Copyright 2025 Irreducible Inc.
 
 # SP1 XMSS Benchmark Script (CPU Only)
 # This script runs benchmarks without CUDA acceleration

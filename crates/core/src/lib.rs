@@ -1,3 +1,4 @@
+// Copyright 2025 Irreducible Inc.
 use hash_chain::hash_chain;
 use rand::{RngCore, rngs::StdRng};
 use serde::{Deserialize, Serialize};

@@ -1,3 +1,4 @@
+// Copyright 2025 Irreducible Inc.
 #![no_main]
 sp1_zkvm::entrypoint!(main);
 

@@ -1,3 +1,4 @@
+// Copyright 2025 Irreducible Inc.
 //! Definition of various tweaked hash functions used in the project.
 
 use rand::{RngCore as _, rngs::StdRng};
