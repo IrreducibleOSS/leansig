@@ -1,3 +1,4 @@
+// Copyright 2025 Irreducible Inc.
 use serde::{Deserialize, Serialize};
 
 /// Specification for the signature scheme instantiation.

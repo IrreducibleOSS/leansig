@@ -1,3 +1,4 @@
+// Copyright 2025 Irreducible Inc.
 use criterion::{Criterion, black_box, criterion_group, criterion_main};
 use leansig_core::spec::{SPEC_1, SPEC_2, Spec};
 use sp1_sdk::{ProverClient, SP1Stdin, SP1ProofWithPublicValues};

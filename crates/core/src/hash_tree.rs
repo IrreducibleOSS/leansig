@@ -1,3 +1,4 @@
+// Copyright 2025 Irreducible Inc.
 use crate::{Hash, Param, hash::tweak_hash_tree_node};
 use serde::{Deserialize, Serialize};
 

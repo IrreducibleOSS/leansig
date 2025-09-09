@@ -1,3 +1,4 @@
+// Copyright 2025 Irreducible Inc.
 use leansig_core::AggregatedVerifier;
 use leansig_shared::XmssTestData;
 use risc0_zkvm::guest::env;
