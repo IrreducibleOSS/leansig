@@ -167,7 +167,7 @@ impl Signer {
             .collect();
 
         let hash_tree = HashTree::new(&param, pub_key_hashes);
-        let root = hash_tree.root.clone();
+        let root = hash_tree.root;
 
         Self {
             rng,
@@ -371,7 +371,7 @@ mod tests {
         let mut signer = Signer::new(StdRng::seed_from_u64(0), 1000000, spec.clone(), 8);
 
         // Get public verification parameters
-        let root = signer.root.clone();
+        let root = signer.root;
         let param = signer.param.clone();
 
         let message1 = Message([10; 32]);
@@ -404,9 +404,9 @@ mod tests {
 
         // Register validator roots
         let roots = vec![
-            validator1.root.clone(),
-            validator2.root.clone(),
-            validator3.root.clone(),
+            validator1.root,
+            validator2.root,
+            validator3.root,
         ];
 
         // Create the validator roots collection for verification
@@ -425,19 +425,19 @@ mod tests {
             ValidatorSignature {
                 epoch: 0,
                 signature: sig1,
-                xmss_root: validator1.root.clone(),
+                xmss_root: validator1.root,
                 param: validator1.param.clone(),
             },
             ValidatorSignature {
                 epoch: 0,
                 signature: sig2,
-                xmss_root: validator2.root.clone(),
+                xmss_root: validator2.root,
                 param: validator2.param.clone(),
             },
             ValidatorSignature {
                 epoch: 0,
                 signature: sig3,
-                xmss_root: validator3.root.clone(),
+                xmss_root: validator3.root,
                 param: validator3.param.clone(),
             },
         ]);
@@ -450,13 +450,13 @@ mod tests {
             ValidatorSignature {
                 epoch: 0,
                 signature: validator1.sign(1, &message).expect("Failed to sign"),
-                xmss_root: validator1.root.clone(),
+                xmss_root: validator1.root,
                 param: validator1.param.clone(),
             },
             ValidatorSignature {
                 epoch: 0,
                 signature: validator2.sign(1, &message).expect("Failed to sign"),
-                xmss_root: validator2.root.clone(),
+                xmss_root: validator2.root,
                 param: validator2.param.clone(),
             },
         ]);
@@ -470,7 +470,7 @@ mod tests {
         let invalid_aggregated = AggregatedSignature::new(vec![ValidatorSignature {
             epoch: 2,
             signature: bad_sig,
-            xmss_root: validator1.root.clone(),
+            xmss_root: validator1.root,
             param: validator1.param.clone(),
         }]);
 
