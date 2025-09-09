@@ -64,7 +64,7 @@ pub fn create_test_data(
         })
         .collect();
 
-    let validator_roots: Vec<_> = validators.iter().map(|v| v.root.clone()).collect();
+    let validator_roots: Vec<_> = validators.iter().map(|v| v.root).collect();
     let validator_params: Vec<_> = validators.iter().map(|v| v.param.clone()).collect();
 
     // Each validator signs the message
@@ -75,7 +75,7 @@ pub fn create_test_data(
             ValidatorSignature {
                 epoch,
                 signature,
-                xmss_root: validator.root.clone(),
+                xmss_root: validator.root,
                 param: validator.param.clone(),
             }
         })

@@ -1,12 +1,12 @@
 // Copyright 2025 Irreducible Inc.
-use leansig_core::{
-    AggregatedVerifier, spec,
-};
+use leansig_core::{spec, AggregatedVerifier};
 use leansig_shared::create_test_data;
 use sp1_sdk::{ProverClient, SP1Stdin};
 use tracing_subscriber;
 
-const ELF: &[u8] = include_bytes!("../../../../target/elf-compilation/riscv32im-succinct-zkvm-elf/release/sp1-guest");
+const ELF: &[u8] = include_bytes!(
+    "../../../../target/elf-compilation/riscv32im-succinct-zkvm-elf/release/sp1-guest"
+);
 
 fn main() {
     // Initialize tracing. In order to view logs, run `RUST_LOG=info cargo run`
@@ -22,7 +22,10 @@ fn main() {
         test_data.public_inputs.spec.clone(),
     );
     assert!(
-        verifier.verify(&test_data.public_inputs.message, &test_data.aggregated_signature),
+        verifier.verify(
+            &test_data.public_inputs.message,
+            &test_data.aggregated_signature
+        ),
         "failed to verify aggregated signature"
     );
 
@@ -47,7 +50,7 @@ fn main() {
     // Get the public values from the proof as committed by the guest.
     let _committed_public_inputs = proof.public_values.read::<leansig_shared::PublicInputs>();
     let committed_verification_result = proof.public_values.read::<bool>();
-    
+
     println!("Verification result: {}", committed_verification_result);
     assert!(committed_verification_result, "Guest verification failed");
 

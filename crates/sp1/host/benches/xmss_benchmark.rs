@@ -1,11 +1,13 @@
 // Copyright 2025 Irreducible Inc.
-use criterion::{Criterion, black_box, criterion_group, criterion_main};
-use leansig_core::spec::{SPEC_1, SPEC_2, Spec};
-use sp1_sdk::{ProverClient, SP1Stdin, SP1ProofWithPublicValues};
+use criterion::{black_box, criterion_group, criterion_main, Criterion};
+use leansig_core::spec::{Spec, SPEC_1, SPEC_2};
 use leansig_shared::{create_test_data, XmssTestData};
+use sp1_sdk::{ProverClient, SP1ProofWithPublicValues, SP1Stdin};
 use std::time::{Duration, Instant};
 
-const ELF: &[u8] = include_bytes!("../../../../target/elf-compilation/riscv32im-succinct-zkvm-elf/release/sp1-guest");
+const ELF: &[u8] = include_bytes!(
+    "../../../../target/elf-compilation/riscv32im-succinct-zkvm-elf/release/sp1-guest"
+);
 
 /// Configuration parameters for benchmarking
 struct BenchmarkConfig {
@@ -64,40 +66,35 @@ impl Job {
             config.num_validators,
             config.spec.clone(),
             config.tree_height,
-            10000,  // max_retries for nonce grinding
-            None,   // use default message [42; 32]
-            None,   // use default epoch 0
+            10000, // max_retries for nonce grinding
+            None,  // use default message [42; 32]
+            None,  // use default epoch 0
         );
 
-        Self {
-            test_data,
-        }
+        Self { test_data }
     }
 
     /// Execute witness generation phase (SP1 setup + stdin preparation)
     fn exec_compute(&self) -> (SP1Stdin, Duration) {
         let start = Instant::now();
-        
+
         let mut stdin = SP1Stdin::new();
         stdin.write(&self.test_data);
-        
+
         let elapsed = start.elapsed();
 
         (stdin, elapsed)
     }
 
     /// Execute proving phase
-    fn prove_stdin(
-        &self,
-        stdin: &SP1Stdin,
-    ) -> (SP1ProofWithPublicValues, Duration) {
+    fn prove_stdin(&self, stdin: &SP1Stdin) -> (SP1ProofWithPublicValues, Duration) {
         let client = ProverClient::from_env();
         let (pk, _vk) = client.setup(ELF);
-        
+
         let start = Instant::now();
         let proof = client.prove(&pk, stdin).run().unwrap();
         let elapsed = start.elapsed();
-        
+
         (proof, elapsed)
     }
 }
@@ -156,7 +153,7 @@ fn xmss_benchmarks(c: &mut Criterion) {
             // We need to recreate stdin for each iteration since it gets consumed
             let mut fresh_stdin = SP1Stdin::new();
             fresh_stdin.write(&job.test_data);
-            
+
             let (proof, _duration) = job.prove_stdin(&fresh_stdin);
             black_box(proof);
         });
@@ -177,7 +174,7 @@ fn xmss_benchmarks(c: &mut Criterion) {
     group.bench_function("proof_verification", |b| {
         let client = ProverClient::from_env();
         let (_pk, vk) = client.setup(ELF);
-        
+
         b.iter(|| {
             client.verify(&proof, &vk).unwrap();
         });
@@ -186,7 +183,11 @@ fn xmss_benchmarks(c: &mut Criterion) {
     // Print additional metrics
     println!("\nSP1 Additional Metrics:");
     let proof_size_bytes = bincode::serialize(&proof).unwrap().len();
-    println!("  Proof Size: {:.2} KiB ({} bytes)", proof_size_bytes as f64 / 1024.0, proof_size_bytes);
+    println!(
+        "  Proof Size: {:.2} KiB ({} bytes)",
+        proof_size_bytes as f64 / 1024.0,
+        proof_size_bytes
+    );
 
     group.finish();
 }

@@ -8,7 +8,7 @@ use leansig_shared::XmssTestData;
 pub fn main() {
     // Read the test data containing both public inputs and aggregated signature
     let test_data = sp1_zkvm::io::read::<XmssTestData>();
-    
+
     // Extract the components
     let public_inputs = test_data.public_inputs;
     let aggregated_signature = test_data.aggregated_signature;
