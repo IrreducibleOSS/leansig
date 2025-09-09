@@ -2,8 +2,8 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use leansig_core::spec::{Spec, SPEC_1, SPEC_2};
 use leansig_shared::{create_test_data, XmssTestData};
-use sp1_sdk::{ProverClient, SP1ProofWithPublicValues, SP1Stdin};
-use std::time::{Duration, Instant};
+use sp1_sdk::{ProverClient, SP1Stdin};
+use std::time::Duration;
 
 const ELF: &[u8] = include_bytes!(
     "../../../../target/elf-compilation/riscv32im-succinct-zkvm-elf/release/sp1-guest"
@@ -75,27 +75,10 @@ impl Job {
     }
 
     /// Execute witness generation phase (SP1 setup + stdin preparation)
-    fn exec_compute(&self) -> (SP1Stdin, Duration) {
-        let start = Instant::now();
-
+    fn exec_compute(&self) -> SP1Stdin {
         let mut stdin = SP1Stdin::new();
         stdin.write(&self.test_data);
-
-        let elapsed = start.elapsed();
-
-        (stdin, elapsed)
-    }
-
-    /// Execute proving phase
-    fn prove_stdin(&self, stdin: &SP1Stdin) -> (SP1ProofWithPublicValues, Duration) {
-        let client = ProverClient::from_env();
-        let (pk, _vk) = client.setup(ELF);
-
-        let start = Instant::now();
-        let proof = client.prove(&pk, stdin).run().unwrap();
-        let elapsed = start.elapsed();
-
-        (proof, elapsed)
+        stdin
     }
 }
 
@@ -121,24 +104,24 @@ fn xmss_benchmarks(c: &mut Criterion) {
     );
     println!("════════════════════════════════════════════════\n");
 
+    // Setup client and keys once for all benchmarks
+    let client = ProverClient::from_env();
+    let (pk, vk) = client.setup(ELF);
+
     let mut group = c.benchmark_group("sp1_xmss_signature");
 
     // Configure the benchmark group
-    group.sample_size(10);
-    group.measurement_time(Duration::from_secs(10));
+    group.sample_size(100);
 
     let job = Job::new(config);
 
     // Benchmark 1: Witness Generation (setup + stdin preparation)
     group.bench_function("witness_generation", |b| {
         b.iter(|| {
-            let (stdin, _duration) = job.exec_compute();
+            let stdin = job.exec_compute();
             black_box(stdin);
         });
     });
-
-    // Pre-compute stdin for proving/verification benchmarks
-    let (stdin, _) = job.exec_compute();
 
     // Reset group configuration for proof generation
     group.finish();
@@ -147,34 +130,29 @@ fn xmss_benchmarks(c: &mut Criterion) {
     let mut group = c.benchmark_group("sp1_xmss_signature_proving");
     group.sample_size(10);
 
+    // Pre-compute stdin once - it gets cloned internally by SP1, not consumed
+    let mut stdin = SP1Stdin::new();
+    stdin.write(&job.test_data);
+
     // Benchmark 2: Proof Generation
     group.bench_function("proof_generation", |b| {
         b.iter(|| {
-            // We need to recreate stdin for each iteration since it gets consumed
-            let mut fresh_stdin = SP1Stdin::new();
-            fresh_stdin.write(&job.test_data);
-
-            let (proof, _duration) = job.prove_stdin(&fresh_stdin);
+            // SP1 clones stdin internally, so we can reuse the same reference
+            let proof = client.prove(&pk, &stdin).run().unwrap();
             black_box(proof);
         });
     });
 
-    // Generate proof for verification benchmark
-    let mut fresh_stdin = SP1Stdin::new();
-    fresh_stdin.write(&job.test_data);
-    let (proof, _) = job.prove_stdin(&fresh_stdin);
+    // Generate proof for verification benchmark (reuse the same stdin)
+    let proof = client.prove(&pk, &stdin).run().unwrap();
 
     group.finish();
 
     // Create new group for verification benchmarks
     let mut group = c.benchmark_group("sp1_xmss_signature_verification");
     group.sample_size(100); // Many samples for quick operation
-    group.measurement_time(Duration::from_secs(5));
 
     group.bench_function("proof_verification", |b| {
-        let client = ProverClient::from_env();
-        let (_pk, vk) = client.setup(ELF);
-
         b.iter(|| {
             client.verify(&proof, &vk).unwrap();
         });
