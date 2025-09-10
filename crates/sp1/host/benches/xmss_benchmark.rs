@@ -3,7 +3,6 @@ use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use leansig_core::spec::{Spec, SPEC_1, SPEC_2};
 use leansig_shared::{create_test_data, XmssTestData};
 use sp1_sdk::{ProverClient, SP1Stdin};
-use std::time::Duration;
 
 const ELF: &[u8] = include_bytes!(
     "../../../../target/elf-compilation/riscv32im-succinct-zkvm-elf/release/sp1-guest"
@@ -78,6 +77,7 @@ impl Job {
     fn exec_compute(&self) -> SP1Stdin {
         let mut stdin = SP1Stdin::new();
         stdin.write(&self.test_data);
+
         stdin
     }
 }
@@ -137,7 +137,6 @@ fn xmss_benchmarks(c: &mut Criterion) {
     // Benchmark 2: Proof Generation
     group.bench_function("proof_generation", |b| {
         b.iter(|| {
-            // SP1 clones stdin internally, so we can reuse the same reference
             let proof = client.prove(&pk, &stdin).run().unwrap();
             black_box(proof);
         });

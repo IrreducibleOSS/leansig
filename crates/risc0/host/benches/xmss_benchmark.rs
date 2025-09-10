@@ -6,7 +6,6 @@ use methods::{XMSS_AGGREGATE_ELF, XMSS_AGGREGATE_ID};
 use risc0_zkvm::{
     ExecutorEnv, ExecutorImpl, ProverOpts, Session, VerifierContext, get_prover_server,
 };
-use std::time::Duration;
 
 /// Configuration parameters for benchmarking
 struct BenchmarkConfig {
@@ -116,7 +115,7 @@ fn xmss_benchmarks(c: &mut Criterion) {
     let prover = get_prover_server(&ProverOpts::succinct()).unwrap();
     let ctx = VerifierContext::default();
 
-    let mut group = c.benchmark_group("xmss_signature_witness_generatione");
+    let mut group = c.benchmark_group("xmss_signature");
     group.sample_size(100);
 
     let job = Job::new(config);
@@ -136,7 +135,7 @@ fn xmss_benchmarks(c: &mut Criterion) {
     group.finish();
 
     // Create new group for proof generation benchmarks
-    let mut group = c.benchmark_group("xmss_signature_proof_generation");
+    let mut group = c.benchmark_group("xmss_signature_proving");
     group.sample_size(10);
 
     // Benchmark 2: Proof Generation (Succinct only)
@@ -153,7 +152,7 @@ fn xmss_benchmarks(c: &mut Criterion) {
     group.finish();
 
     // Create new group for verification benchmarks
-    let mut group = c.benchmark_group("xmss_signature_proof_verification");
+    let mut group = c.benchmark_group("xmss_signature_verification");
     group.sample_size(100); // Many samples for quick operation
 
     group.bench_function("proof_verification", |b| {
