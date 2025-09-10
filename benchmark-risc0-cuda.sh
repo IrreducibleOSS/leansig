@@ -1,5 +1,9 @@
 #!/bin/bash
 # Copyright 2025 Irreducible Inc.
+<<<<<<< HEAD
+=======
+
+>>>>>>> 14c2aa0 (add copyright)
 
 # RISC0 XMSS Benchmark Script with CUDA Support
 # This script runs benchmarks with CUDA acceleration if available
