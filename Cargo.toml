@@ -16,3 +16,6 @@ opt-level = 3
 [profile.release]
 debug = 1
 lto = true
+
+[patch.crates-io]
+tiny-keccak = { git = "https://github.com/sp1-patches/tiny-keccak", tag = "patch-2.0.2-sp1-4.0.0" }
