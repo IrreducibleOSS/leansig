@@ -5,17 +5,14 @@ members = [
     "crates/core",
     "crates/risc0/host",
     "crates/risc0/methods",
-    "crates/sp1/host",
-    "crates/sp1/guest"
+    "crates/sp1/host"
 ]
+exclude = ["crates/sp1/guest"]
 
 # Always optimize; building and running the guest takes much longer without optimization.
 [profile.dev]
 opt-level = 3
 
 [profile.release]
-debug = 1
+debug = 0
 lto = true
-
-[patch.crates-io]
-tiny-keccak = { git = "https://github.com/sp1-patches/tiny-keccak", tag = "patch-2.0.2-sp1-4.0.0" }

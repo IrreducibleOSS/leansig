@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-sp1-sdk = "4.0.0"
+sp1-sdk = "5.2.1"
 leansig-shared = { path = "../../shared" }
 leansig-core = { path = "../../core" }
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
@@ -16,6 +16,8 @@ rand = "0.9"
 criterion = { version = "0.5", features = ["html_reports"] }
 leansig-shared = { path = "../../shared" }
 
+[patch.crates-io]
+tiny-keccak = { git = "https://github.com/sp1-patches/tiny-keccak", tag = "patch-2.0.2-sp1-4.0.0" }
 [[bench]]
 name = "xmss_benchmark"
 harness = false

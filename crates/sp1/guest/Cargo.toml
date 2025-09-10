@@ -3,7 +3,12 @@ name = "sp1-guest"
 version = "0.1.0"
 edition = "2021"
 
+[workspace]
+
 [dependencies]
-sp1-zkvm = "4.0.0"
+sp1-zkvm = "5.2.1"
 leansig-core = { path = "../../core" }
 leansig-shared = { path = "../../shared" }
+
+[patch.crates-io]
+tiny-keccak = { git = "https://github.com/sp1-patches/tiny-keccak", tag = "patch-2.0.2-sp1-4.0.0" }
