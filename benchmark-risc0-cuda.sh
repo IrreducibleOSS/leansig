@@ -22,7 +22,7 @@ else
 fi
 
 # Set environment variables for optimal RISC0 performance
-export RUST_LOG=info
+export RUST_LOG=warn
 export RISC0_PROVER=local  # Use local prover
 export RISC0_GPU_SPLIT_FACTOR=1  # Use single GPU if available
 
