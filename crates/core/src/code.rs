@@ -1,4 +1,5 @@
 // Copyright 2025 Irreducible Inc.
+
 //! Encoding related stuff.
 
 use bitvec::prelude::*;

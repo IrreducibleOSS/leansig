@@ -6,7 +6,6 @@ use methods::{XMSS_AGGREGATE_ELF, XMSS_AGGREGATE_ID};
 use risc0_zkvm::{
     ExecutorEnv, ExecutorImpl, ProverOpts, Session, VerifierContext, get_prover_server,
 };
-use std::time::{Duration, Instant};
 
 /// Configuration parameters for benchmarking
 struct BenchmarkConfig {
@@ -78,7 +77,7 @@ impl Job {
     }
 
     /// Execute witness generation phase
-    fn exec_compute(&self) -> (Session, Duration) {
+    fn exec_compute(&self) -> Session {
         let env = ExecutorEnv::builder()
             .write(&self.test_data)
             .unwrap()
@@ -86,27 +85,7 @@ impl Job {
             .unwrap();
 
         let mut exec = ExecutorImpl::from_elf(env, &self.elf).unwrap();
-        let start = Instant::now();
-        let session = exec.run().unwrap();
-        let elapsed = start.elapsed();
-
-        (session, elapsed)
-    }
-
-    /// Execute proving phase
-    fn prove_session(
-        &self,
-        session: &Session,
-        prover_opts: ProverOpts,
-    ) -> (risc0_zkvm::Receipt, Duration) {
-        let prover = get_prover_server(&prover_opts).unwrap();
-        let ctx = VerifierContext::default();
-
-        let start = Instant::now();
-        let receipt = prover.prove_session(&ctx, session).unwrap().receipt;
-        let elapsed = start.elapsed();
-
-        (receipt, elapsed)
+        exec.run().unwrap()
     }
 }
 
@@ -132,24 +111,25 @@ fn xmss_benchmarks(c: &mut Criterion) {
     );
     println!("════════════════════════════════════════════════\n");
 
-    let mut group = c.benchmark_group("xmss_signature");
+    // Setup prover and verifier context once for all benchmarks
+    let prover = get_prover_server(&ProverOpts::succinct()).unwrap();
+    let ctx = VerifierContext::default();
 
-    // Configure the benchmark group
-    group.sample_size(10);
-    group.measurement_time(Duration::from_secs(10));
+    let mut group = c.benchmark_group("xmss_signature");
+    group.sample_size(100);
 
     let job = Job::new(config);
 
     // Benchmark 1: Witness Generation
     group.bench_function("witness_generation", |b| {
         b.iter(|| {
-            let (session, _duration) = job.exec_compute();
+            let session = job.exec_compute();
             black_box(session);
         });
     });
 
     // Pre-compute session for proving/verification benchmarks
-    let (session, _) = job.exec_compute();
+    let session = job.exec_compute();
 
     // Reset group configuration for proof generation
     group.finish();
@@ -161,20 +141,19 @@ fn xmss_benchmarks(c: &mut Criterion) {
     // Benchmark 2: Proof Generation (Succinct only)
     group.bench_function("proof_generation", |b| {
         b.iter(|| {
-            let (receipt, _duration) = job.prove_session(&session, ProverOpts::succinct());
+            let receipt = prover.prove_session(&ctx, &session).unwrap().receipt;
             black_box(receipt);
         });
     });
 
     // Generate succinct receipt for verification benchmark
-    let (receipt, _) = job.prove_session(&session, ProverOpts::succinct());
+    let receipt = prover.prove_session(&ctx, &session).unwrap().receipt;
 
     group.finish();
 
     // Create new group for verification benchmarks
     let mut group = c.benchmark_group("xmss_signature_verification");
     group.sample_size(100); // Many samples for quick operation
-    group.measurement_time(Duration::from_secs(5));
 
     group.bench_function("proof_verification", |b| {
         b.iter(|| {
